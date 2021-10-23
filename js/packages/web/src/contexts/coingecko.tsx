@@ -15,7 +15,7 @@ export const solToUSD = async (): Promise<number> => {
 
 export const altSplToUSD = async (): Promise<number> => {
   if (!process.env.NEXT_CG_SPL_TOKEN_ID)
-    throw new Error("Alternative SPL token triggered but no token mint specified")
+    return 0
 
   const cg_spl_token_id = process.env.NEXT_CG_SPL_TOKEN_ID
   const url = `${COINGECKO_COIN_PRICE_API}?ids=${cg_spl_token_id}&vs_currencies=usd`;

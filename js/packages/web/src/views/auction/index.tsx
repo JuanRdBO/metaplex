@@ -338,6 +338,20 @@ export const AuctionView = () => {
                     )}
                   </span>
                 </div>
+                <div className={'info-component'}>
+                  <h6 className={'info-title'}>CURRENCY</h6>
+                  <span>
+                    {nftCount === undefined ? (
+                      <Skeleton paragraph={{ rows: 0 }} />
+                    ) : (
+                      shortenAddress(auction?.auction.info.tokenMint || "")
+                    )}
+                    <ClickToCopy
+                      className="copy-pubkey"
+                      copyText={auction?.auction.info.tokenMint || ""}
+                    />
+                  </span>
+                </div>
               </div>
             </Col>
             <Col span={12} md={8}>
@@ -456,7 +470,7 @@ const BidLine = (props: {
                     flexDirection: 'row',
                     alignItems: 'center',
                   }}
-                  displaySOL={true}
+                  displaySymbol={true}
                   iconSize={24}
                   amount={formatTokenAmount(bid.info.lastBid, mint)}
                 />
@@ -500,7 +514,7 @@ const BidLine = (props: {
                   flexDirection: 'row',
                   alignItems: 'center',
                 }}
-                displaySOL={true}
+                displaySymbol={true}
                 iconSize={24}
                 amount={formatTokenAmount(bid.info.lastBid, mint)}
               />

@@ -231,7 +231,7 @@ export const AuctionCard = ({
 
   const mintKey = auctionView.auction.info.tokenMint;
   const balance = useUserBalance(mintKey);
-
+  
   const myPayingAccount = balance.accounts[0];
   let winnerIndex: number | null = null;
   if (auctionView.myBidderPot?.pubkey)
@@ -451,7 +451,7 @@ export const AuctionCard = ({
             auctionView={auctionView}
             showAsRow={true}
             hideCountdown={true}
-            displaySOL={true}
+            displaySymbol={true}
           />
           {showPlaceBid &&
             !hideDefaultAction &&
