@@ -12,9 +12,17 @@ import {
   StringPublicKey,
   WalletSigner,
   toPublicKey,
+  createAssociatedTokenAccountInstruction,
+  programIds,
+  pubkeyToString,
 } from '@oyster/common';
 import { AccountLayout } from '@solana/spl-token';
-import { TransactionInstruction, Keypair, Connection } from '@solana/web3.js';
+import {
+  TransactionInstruction,
+  Keypair,
+  Connection,
+  PublicKey,
+} from '@solana/web3.js';
 import { AuctionView } from '../hooks';
 import {
   BidRedemptionTicket,
@@ -23,6 +31,7 @@ import {
 import { claimUnusedPrizes } from './claimUnusedPrizes';
 import { setupPlaceBid } from './sendPlaceBid';
 import { WalletNotConnectedError } from '@solana/wallet-adapter-base';
+import { ALT_SPL_MINT } from '@oyster/common';
 
 export async function sendCancelBid(
   connection: Connection,
@@ -66,6 +75,7 @@ export async function sendCancelBid(
     wallet,
     signers,
     instructions,
+    connection,
   );
 
   if (
@@ -112,6 +122,7 @@ export async function setupCancelBid(
   wallet: WalletSigner,
   signers: Array<Keypair[]>,
   instructions: Array<TransactionInstruction[]>,
+  connection: Connection,
 ) {
   if (!wallet.publicKey) throw new WalletNotConnectedError();
 
@@ -123,18 +134,51 @@ export async function setupCancelBid(
   const mint = cache.get(auctionView.auction.info.tokenMint);
 
   if (mint && auctionView.myBidderPot) {
-    const receivingSolAccount = ensureWrappedAccount(
-      cancelInstructions,
-      cleanupInstructions,
-      tokenAccount,
-      wallet.publicKey,
-      accountRentExempt,
-      cancelSigners,
-    );
+    let receivingSolAccount_or_ata = '';
+    if (!ALT_SPL_MINT) {
+      receivingSolAccount_or_ata = ensureWrappedAccount(
+        cancelInstructions,
+        cleanupInstructions,
+        tokenAccount,
+        wallet.publicKey,
+        accountRentExempt,
+        cancelSigners,
+      );
+    } else {
+      // if alternative currency is set, go for it
+      const PROGRAM_IDS = programIds();
+      const receivingSolAccount_or_ata = (
+        await PublicKey.findProgramAddress(
+          [
+            wallet.publicKey.toBuffer(),
+            PROGRAM_IDS.token.toBuffer(),
+            ALT_SPL_MINT.toBuffer(),
+          ],
+          PROGRAM_IDS.associatedToken,
+        )
+      )[0];
+      const settleInstructions: TransactionInstruction[] = [];
+
+      const existingAta = await connection.getAccountInfo(
+        receivingSolAccount_or_ata,
+      );
+
+      // create a new ATA if there is none
+      console.log('Looking for existing ata?', existingAta);
+      if (!existingAta) {
+        createAssociatedTokenAccountInstruction(
+          settleInstructions,
+          receivingSolAccount_or_ata,
+          wallet.publicKey,
+          wallet.publicKey,
+          ALT_SPL_MINT,
+        );
+      }
+    }
 
     await cancelBid(
       wallet.publicKey.toBase58(),
-      receivingSolAccount,
+      pubkeyToString(receivingSolAccount_or_ata),
       auctionView.myBidderPot.info.bidderPot,
       auctionView.auction.info.tokenMint,
       auctionView.vault.pubkey,

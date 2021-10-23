@@ -34,6 +34,9 @@ module.exports = withPlugins(plugins, {
     NEXT_PUBLIC_STORE_ADDRESS: process.env.STORE_ADDRESS,
     NEXT_PUBLIC_BIG_STORE: process.env.REACT_APP_BIG_STORE,
     NEXT_PUBLIC_CLIENT_ID: process.env.REACT_APP_CLIENT_ID,
+
+    NEXT_SPL_TOKEN_MINT: process.env.SPL_TOKEN_MINT,
+    NEXT_CG_SPL_TOKEN_ID: process.env.CG_SPL_TOKEN_ID,
   },
   async rewrites() {
     return [

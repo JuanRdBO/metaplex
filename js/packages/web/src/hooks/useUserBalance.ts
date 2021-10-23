@@ -1,11 +1,12 @@
 import {
+  ALT_SPL_MINT,
   fromLamports,
   StringPublicKey,
   useMint,
   useUserAccounts,
 } from '@oyster/common';
 import { useEffect, useMemo, useState } from 'react';
-import { useSolPrice } from '../contexts';
+import { useSolPrice, useAltSplPrice } from '../contexts';
 
 export function useUserBalance(
   mintAddress?: StringPublicKey,
@@ -19,6 +20,7 @@ export function useUserBalance(
   const [balanceInUSD, setBalanceInUSD] = useState(0);
   // TODO: add option to register for different token prices
   const solPrice = useSolPrice();
+  const altSplPrice = useAltSplPrice();
 
   const mintInfo = useMint(mint);
   const accounts = useMemo(() => {
@@ -44,8 +46,10 @@ export function useUserBalance(
   );
 
   useEffect(() => {
-    setBalanceInUSD(balance * solPrice);
-  }, [balance, solPrice, mint, setBalanceInUSD]);
+    ALT_SPL_MINT
+      ? setBalanceInUSD(balance * altSplPrice)
+      : setBalanceInUSD(balance * solPrice);
+  }, [balance, solPrice, altSplPrice, mint, setBalanceInUSD]);
 
   return {
     balance,

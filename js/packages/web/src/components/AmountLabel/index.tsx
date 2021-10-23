@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Statistic } from 'antd';
-import { useSolPrice } from '../../contexts';
+import { useSolPrice, useAltSplPrice } from '../../contexts';
 import { formatUSD } from '@oyster/common';
 import { SolCircle } from '../Custom';
 
@@ -31,12 +31,14 @@ export const AmountLabel = (props: IAmountLabel) => {
   const amount = typeof _amount === 'string' ? parseFloat(_amount) : _amount;
 
   const solPrice = useSolPrice();
+  const altSplPrice = useAltSplPrice()
 
   const [priceUSD, setPriceUSD] = useState<number | undefined>(undefined);
 
   useEffect(() => {
-    setPriceUSD(solPrice * amount);
-  }, [amount, solPrice]);
+    process.env.NEXT_SPL_TOKEN_MINT? setPriceUSD(altSplPrice * amount)
+        :setPriceUSD(solPrice * amount);
+  }, [amount, solPrice, altSplPrice]);
 
   const PriceNaN = isNaN(amount);
 

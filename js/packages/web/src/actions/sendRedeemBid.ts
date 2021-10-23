@@ -1,4 +1,9 @@
-import { Keypair, Connection, TransactionInstruction } from '@solana/web3.js';
+import {
+  Keypair,
+  Connection,
+  TransactionInstruction,
+  PublicKey,
+} from '@solana/web3.js';
 import {
   ParsedAccount,
   programIds,
@@ -23,6 +28,9 @@ import {
   StringPublicKey,
   toPublicKey,
   WalletSigner,
+  createAssociatedTokenAccountInstruction,
+  ALT_SPL_MINT,
+  pubkeyToString,
 } from '@oyster/common';
 import { WalletNotConnectedError } from '@solana/wallet-adapter-base';
 import { AccountLayout, MintLayout, Token } from '@solana/spl-token';
@@ -219,6 +227,7 @@ export async function sendRedeemBid(
       wallet,
       signers,
       instructions,
+      connection,
     );
   }
 
@@ -766,14 +775,46 @@ export async function setupRedeemParticipationInstructions(
       console.log('Found token account', tokenAccount);
     }
 
-    const payingSolAccount = ensureWrappedAccount(
-      mintingInstructions,
-      cleanupInstructions,
-      tokenAccount,
-      wallet.publicKey,
-      price + accountRentExempt,
-      mintingSigners,
-    );
+    let receivingSolAccount_or_ata = '';
+    if (!ALT_SPL_MINT) {
+      receivingSolAccount_or_ata = ensureWrappedAccount(
+        mintingInstructions,
+        cleanupInstructions,
+        tokenAccount,
+        wallet.publicKey,
+        price + accountRentExempt,
+        mintingSigners,
+      );
+    } else {
+      // if alternative currency is set, go for it
+      const PROGRAM_IDS = programIds();
+      const ata = (
+        await PublicKey.findProgramAddress(
+          [
+            wallet.publicKey.toBuffer(),
+            PROGRAM_IDS.token.toBuffer(),
+            ALT_SPL_MINT.toBuffer(),
+          ],
+          PROGRAM_IDS.associatedToken,
+        )
+      )[0];
+      receivingSolAccount_or_ata = pubkeyToString(ata);
+      const settleInstructions: TransactionInstruction[] = [];
+
+      const existingAta = await connection.getAccountInfo(ata);
+
+      // create a new ATA if there is none
+      console.log('Looking for existing ata?', existingAta);
+      if (!existingAta) {
+        createAssociatedTokenAccountInstruction(
+          settleInstructions,
+          ata,
+          wallet.publicKey,
+          wallet.publicKey,
+          ALT_SPL_MINT,
+        );
+      }
+    }
 
     instructions.push(mintingInstructions);
     signers.push(mintingSigners);
@@ -785,7 +826,7 @@ export async function setupRedeemParticipationInstructions(
     const transferAuthority = approve(
       myInstructions,
       cleanupInstructions,
-      toPublicKey(payingSolAccount),
+      toPublicKey(receivingSolAccount_or_ata),
       wallet.publicKey,
       price,
     );
@@ -806,7 +847,7 @@ export async function setupRedeemParticipationInstructions(
       item.metadata.info.mint,
       transferAuthority.publicKey.toBase58(),
       auctionView.auctionManager.acceptPayment,
-      payingSolAccount,
+      pubkeyToString(receivingSolAccount_or_ata),
       mint,
       me.info.supply.add(new BN(1)),
       winnerIndex != null && winnerIndex != undefined
