@@ -36,6 +36,7 @@ module.exports = withPlugins(plugins, {
     NEXT_PUBLIC_CLIENT_ID: process.env.REACT_APP_CLIENT_ID,
 
     NEXT_SPL_TOKEN_MINT: process.env.SPL_TOKEN_MINT,
+    NEXT_SPL_TOKEN_SYMBOL: process.env.SPL_TOKEN_SYMBOL,
     NEXT_CG_SPL_TOKEN_ID: process.env.CG_SPL_TOKEN_ID,
   },
   async rewrites() {

@@ -24,6 +24,7 @@ import {
   useWalletModal,
   VaultState,
   BidStateType,
+  ALT_SPL_MINT,
 } from '@oyster/common';
 import {
   AuctionView,
@@ -534,7 +535,7 @@ export const AuctionCard = ({
             <div className="show-place-bid">
               <AmountLabel
                 title="in your wallet"
-                displaySOL={true}
+                displaySymbol={true}
                 style={{ marginBottom: 0 }}
                 amount={formatAmount(balance.balance, 2)}
                 customPrefix={

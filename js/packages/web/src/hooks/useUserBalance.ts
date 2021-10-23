@@ -35,6 +35,8 @@ export function useUserBalance(
 
   const balanceLamports = useMemo(() => {
     return accounts.reduce(
+      // TODO: Edge-case: If a number is too big (more than 10M) and the decimals
+      //    for the token are > 8, the lamports.toNumber() crashes, as it is more then 53 bits.
       (res, item) => (res += item.info.amount.toNumber()),
       0,
     );

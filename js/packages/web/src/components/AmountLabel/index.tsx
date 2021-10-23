@@ -7,7 +7,7 @@ import { SolCircle } from '../Custom';
 interface IAmountLabel {
   amount: number | string;
   displayUSD?: boolean;
-  displaySOL?: boolean;
+  displaySymbol?: boolean;
   title?: string;
   style?: object;
   containerStyle?: object;
@@ -20,7 +20,7 @@ export const AmountLabel = (props: IAmountLabel) => {
   const {
     amount: _amount,
     displayUSD = true,
-    displaySOL = false,
+    displaySymbol = false,
     title = '',
     style = {},
     containerStyle = {},
@@ -32,6 +32,8 @@ export const AmountLabel = (props: IAmountLabel) => {
 
   const solPrice = useSolPrice();
   const altSplPrice = useAltSplPrice()
+
+  const symbolName = process.env.NEXT_SPL_TOKEN_SYMBOL?process.env.NEXT_SPL_TOKEN_SYMBOL:"SOL"
 
   const [priceUSD, setPriceUSD] = useState<number | undefined>(undefined);
 
@@ -49,7 +51,7 @@ export const AmountLabel = (props: IAmountLabel) => {
           style={style}
           className="create-statistic"
           title={title || ''}
-          value={`${amount}${displaySOL ? ' SOL' : ''}`}
+          value={`${amount}${displaySymbol ? symbolName : ''}`}
           prefix={customPrefix || <SolCircle iconSize={iconSize} />}
         />
       )}
