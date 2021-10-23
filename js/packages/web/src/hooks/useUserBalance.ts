@@ -1,12 +1,12 @@
 import {
-  ALT_SPL_MINT,
   fromLamports,
   StringPublicKey,
   useMint,
   useUserAccounts,
+  WRAPPED_SOL_MINT,
 } from '@oyster/common';
 import { useEffect, useMemo, useState } from 'react';
-import { useSolPrice, useAltSplPrice } from '../contexts';
+import { useSolPrice, useAllSplPrices } from '../contexts';
 
 export function useUserBalance(
   mintAddress?: StringPublicKey,
@@ -18,9 +18,20 @@ export function useUserBalance(
   );
   const { userAccounts } = useUserAccounts();
   const [balanceInUSD, setBalanceInUSD] = useState(0);
-  // TODO: add option to register for different token prices
+  // TODO: add option to register for different token prices without having to set them in env
+  console.log(
+    '[--P]MINTADDRESS',
+    mintAddress,
+    useAllSplPrices(),
+    useSolPrice(),
+  );
+
   const solPrice = useSolPrice();
-  const altSplPrice = useAltSplPrice();
+  const altSplPrice = useAllSplPrices().filter(
+    a => a.tokenMint == mintAddress,
+  )[0]?.tokenPrice;
+  const tokenPrice =
+    mintAddress == WRAPPED_SOL_MINT.toBase58() ? solPrice : altSplPrice;
 
   const mintInfo = useMint(mint);
   const accounts = useMemo(() => {
@@ -35,7 +46,7 @@ export function useUserBalance(
 
   const balanceLamports = useMemo(() => {
     return accounts.reduce(
-      // TODO: Edge-case: If a number is too big (more than 10M) and the decimals
+      // TODO: Edge-case: If a number is too big (more than 10Mil) and the decimals
       //    for the token are > 8, the lamports.toNumber() crashes, as it is more then 53 bits.
       (res, item) => (res += item.info.amount.toNumber()),
       0,
@@ -48,10 +59,8 @@ export function useUserBalance(
   );
 
   useEffect(() => {
-    ALT_SPL_MINT
-      ? setBalanceInUSD(balance * altSplPrice)
-      : setBalanceInUSD(balance * solPrice);
-  }, [balance, solPrice, altSplPrice, mint, setBalanceInUSD]);
+    setBalanceInUSD(balance * tokenPrice);
+  }, [balance, tokenPrice, mint, setBalanceInUSD]);
 
   return {
     balance,

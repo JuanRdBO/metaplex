@@ -65,6 +65,7 @@ export const AuctionNumbers = (props: {
               displaySymbol={tokenInfo.symbol}
               style={{ marginBottom: props.showAsRow ? 0 : 10 }}
               title={auctionView.isInstantSale ? 'Price' : 'Starting bid'}
+              tokenInfo = {tokenInfo}
               amount={fromLamports(
                 participationOnly ? participationFixedPrice : priceFloor,
                 mintInfo,
@@ -79,7 +80,7 @@ export const AuctionNumbers = (props: {
                 flexDirection: props.showAsRow ? ' row' : 'column',
               }}
               title="Highest bid"
-              iconFile = {tokenInfo.logoURI}
+              tokenInfo = {tokenInfo}
               amount={formatTokenAmount(bids[0].info.lastBid, mintInfo)}
             />
           )}

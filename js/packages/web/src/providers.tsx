@@ -17,8 +17,8 @@ export const Providers: FC = ({ children }) => {
     <ConnectionProvider>
       <WalletProvider>
         <AccountsProvider>
-          <CoingeckoProvider>
             <SPLTokenListProvider>
+          <CoingeckoProvider>
               <StoreProvider
                 ownerAddress={process.env.NEXT_PUBLIC_STORE_OWNER_ADDRESS}
                 storeAddress={process.env.NEXT_PUBLIC_STORE_ADDRESS}
@@ -31,8 +31,8 @@ export const Providers: FC = ({ children }) => {
                   </LoaderProvider>
                 </MetaProvider>
               </StoreProvider>
-            </SPLTokenListProvider>
           </CoingeckoProvider>
+            </SPLTokenListProvider>
         </AccountsProvider>
       </WalletProvider>
     </ConnectionProvider>

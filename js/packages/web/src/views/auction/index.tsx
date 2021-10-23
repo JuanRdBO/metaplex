@@ -522,7 +522,7 @@ const BidLine = (props: {
                   alignItems: 'center',
                 }}
                 displaySymbol={tokenInfo.symbol}
-                iconFile={tokenInfo.logoURI}
+                tokenInfo={tokenInfo}
                 iconSize={24}
                 amount={formatTokenAmount(bid.info.lastBid, mint)}
               />

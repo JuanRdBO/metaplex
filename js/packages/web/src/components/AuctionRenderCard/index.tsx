@@ -57,7 +57,7 @@ export const AuctionRenderCard = (props: AuctionCard) => {
           title={status}
           amount={amount}
           iconSize={24}
-          iconFile={tokenInfo.logoURI}
+          tokenInfo={tokenInfo}
         />
       </div>
     </Card>

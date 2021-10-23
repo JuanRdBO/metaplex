@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Statistic } from 'antd';
-import { useSolPrice, useAltSplPrice } from '../../contexts';
-import { formatAmount, formatUSD } from '@oyster/common';
+import { useSolPrice, useAllSplPrices } from '../../contexts';
+import { formatAmount, formatUSD, WRAPPED_SOL_MINT } from '@oyster/common';
 import { TokenCircle } from '../Custom';
+import { useTokenList } from '../../contexts/tokenList';
+import { TokenInfo } from '@solana/spl-token-registry';
 
 interface IAmountLabel {
   amount: number | string;
@@ -14,7 +16,7 @@ interface IAmountLabel {
   iconSize?: number;
   customPrefix?: JSX.Element;
   ended?: boolean;
-  iconFile?: string;
+  tokenInfo?: TokenInfo;
 }
 
 export const AmountLabel = (props: IAmountLabel) => {
@@ -28,21 +30,21 @@ export const AmountLabel = (props: IAmountLabel) => {
     iconSize = 38,
     customPrefix,
     ended,
-    iconFile = ''
+    tokenInfo
   } = props;
   // Add formattedAmount to be able to parse USD value and retain abbreviation of value
   const amount = typeof _amount === 'string' ? parseFloat(_amount) : _amount;
   const formattedAmount = formatAmount(amount)
 
   const solPrice = useSolPrice();
-  const altSplPrice = useAltSplPrice()
+  const altSplPrice = useAllSplPrices().filter(a=>a.tokenMint == tokenInfo?.address)[0]?.tokenPrice
+  const tokenPrice = tokenInfo?.address == WRAPPED_SOL_MINT.toBase58()? solPrice: altSplPrice
 
   const [priceUSD, setPriceUSD] = useState<number | undefined>(undefined);
 
   useEffect(() => {
-    process.env.NEXT_SPL_TOKEN_MINT? setPriceUSD(altSplPrice * amount)
-        :setPriceUSD(solPrice * amount);
-  }, [amount, solPrice, altSplPrice]);
+    setPriceUSD(tokenPrice * amount);
+  }, [amount, tokenPrice, altSplPrice]);
 
   const PriceNaN = isNaN(amount);
 
@@ -54,7 +56,7 @@ export const AmountLabel = (props: IAmountLabel) => {
           className="create-statistic"
           title={title || ''}
           value={`${formattedAmount} ${displaySymbol || ''}`}
-          prefix={customPrefix || <TokenCircle iconSize={iconSize} iconFile={iconFile==""? undefined: iconFile}/>}
+          prefix={customPrefix || <TokenCircle iconSize={iconSize} iconFile={tokenInfo?.logoURI==""? undefined: tokenInfo?.logoURI}/>}
         />
       )}
       {displayUSD && (

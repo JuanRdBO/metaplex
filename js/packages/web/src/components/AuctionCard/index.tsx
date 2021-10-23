@@ -233,6 +233,7 @@ export const AuctionCard = ({
   const mintKey = auctionView.auction.info.tokenMint;
   const balance = useUserBalance(mintKey);
   const tokenInfo = useTokenList().mainnetTokens.filter(m=>m.address == mintKey)[0]
+  console.log("[--P]AuctionCard", tokenInfo, mintKey)
   const myPayingAccount = balance.accounts[0];
   let winnerIndex: number | null = null;
   if (auctionView.myBidderPot?.pubkey)
@@ -539,6 +540,7 @@ export const AuctionCard = ({
                 displaySymbol={tokenInfo.symbol}
                 style={{ marginBottom: 0 }}
                 amount={balance.balance}
+                tokenInfo={tokenInfo}
                 customPrefix={
                   <Identicon
                     address={wallet?.publicKey?.toBase58()}
