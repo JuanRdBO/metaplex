@@ -1,7 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
 import React, { useState } from "react";
-import { useTokenList } from "../../contexts/tokenList";
-import useMediaQuery, { MediaQueryKey } from 'use-media-antd-query';import {
+import { useSwappableTokens, useTokenList } from "../../contexts/tokenList";
+import {
     makeStyles,
     Dialog,
     DialogTitle,
@@ -13,6 +13,7 @@ import useMediaQuery, { MediaQueryKey } from 'use-media-antd-query';import {
     Typography,
     Tabs,
     Tab,
+    useMediaQuery
   } from "@material-ui/core";
   import { ExpandMore, ImportExportRounded } from "@material-ui/icons";
 import { TokenInfo } from "@solana/spl-token-registry";
@@ -80,9 +81,14 @@ export default function TokenDialog({
     const [tokenFilter, setTokenFilter] = useState("");
     const filter = tokenFilter.toLowerCase();
     const styles = useStyles();
-    const swappableTokens  = useTokenList().mainnetTokens;
-    const displayTabs = !useMediaQuery();
-    const selectedTokens = swappableTokens
+    const { swappableTokens, swappableTokensSollet, swappableTokensWormhole } = useSwappableTokens();
+    const displayTabs = !useMediaQuery("(max-width:450px)");
+    const selectedTokens =
+      tabSelection === 0
+        ? swappableTokens
+        : tabSelection === 1
+        ? swappableTokensWormhole
+        : swappableTokensSollet;
     let tokens =
       tokenFilter === ""
         ? selectedTokens
@@ -186,8 +192,8 @@ export default function TokenDialog({
   }
 
   export function TokenIcon({ mint, style }: { mint: PublicKey; style: any }) {
-    const tokenMap = useTokenList().mainnetTokens;
-    let tokenInfo = tokenMap.filter(t=>t.address == mint.toBase58())[0];
+    const tokenMap = useTokenList().tokenMap;
+    let tokenInfo = tokenMap.get(mint.toString());
     return (
       <div
         style={{
@@ -206,13 +212,14 @@ export default function TokenDialog({
   }
   
   function TokenName({ mint, style }: { mint: PublicKey; style?: any }) {
-    const tokenMap = useTokenList().mainnetTokens;
-    let tokenInfo = tokenMap.filter(t=>t.address == mint.toBase58())[0];
+    const tokenMap = useTokenList().tokenMap;
+    let tokenInfo = tokenMap.get(mint.toString());
   
     return (
       <Typography
         style={{
-          ...style,
+            padding: "0.5vw",
+            ...style,
         }}
       >
         {tokenInfo?.symbol}
