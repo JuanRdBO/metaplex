@@ -999,19 +999,50 @@ async function deprecatedSetupRedeemParticipationInstructions(
           ? fixedPrice.toNumber()
           : auctionView.myBidderMetadata.info.lastBid.toNumber() || 0;
 
-      const payingSolAccount = ensureWrappedAccount(
-        winningPrizeInstructions,
-        cleanupInstructions,
-        tokenAccount,
-        wallet.publicKey,
-        price + accountRentExempt,
-        winningPrizeSigner,
-      );
+      let receivingSolAccount_or_ata = '';
+      if (!ALT_SPL_MINT) {
+        receivingSolAccount_or_ata = ensureWrappedAccount(
+          winningPrizeInstructions,
+          cleanupInstructions,
+          tokenAccount,
+          wallet.publicKey,
+          price + accountRentExempt,
+          winningPrizeSigner,
+        );
+      } else {
+        // if alternative currency is set, go for it
+        const PROGRAM_IDS = programIds();
+        const ata = (
+          await PublicKey.findProgramAddress(
+            [
+              wallet.publicKey.toBuffer(),
+              PROGRAM_IDS.token.toBuffer(),
+              ALT_SPL_MINT.toBuffer(),
+            ],
+            PROGRAM_IDS.associatedToken,
+          )
+        )[0];
+        const settleInstructions: TransactionInstruction[] = [];
+        receivingSolAccount_or_ata = pubkeyToString(ata);
+        const existingAta = await connection.getAccountInfo(ata);
+
+        // create a new ATA if there is none
+        console.log('Looking for existing ata?', existingAta);
+        if (!existingAta) {
+          createAssociatedTokenAccountInstruction(
+            settleInstructions,
+            new PublicKey(receivingSolAccount_or_ata),
+            wallet.publicKey,
+            wallet.publicKey,
+            ALT_SPL_MINT,
+          );
+        }
+      }
 
       const transferAuthority = approve(
         winningPrizeInstructions,
         cleanupInstructions,
-        toPublicKey(payingSolAccount),
+        toPublicKey(receivingSolAccount_or_ata),
         wallet.publicKey,
         price,
       );
@@ -1029,7 +1060,7 @@ async function deprecatedSetupRedeemParticipationInstructions(
         participationState.printingAuthorizationTokenAccount,
         transferAuthority.publicKey.toBase58(),
         auctionView.auctionManager.acceptPayment,
-        payingSolAccount,
+        receivingSolAccount_or_ata,
       );
       newTokenBalance = 1;
       instructions.push([...winningPrizeInstructions, ...cleanupInstructions]);

@@ -37,8 +37,6 @@ export const AmountLabel = (props: IAmountLabel) => {
   const solPrice = useSolPrice();
   const altSplPrice = useAltSplPrice()
 
-  const symbolName = process.env.NEXT_SPL_TOKEN_SYMBOL?process.env.NEXT_SPL_TOKEN_SYMBOL:"SOL"
-
   const [priceUSD, setPriceUSD] = useState<number | undefined>(undefined);
 
   useEffect(() => {

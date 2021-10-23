@@ -147,7 +147,7 @@ export async function setupCancelBid(
     } else {
       // if alternative currency is set, go for it
       const PROGRAM_IDS = programIds();
-      const receivingSolAccount_or_ata = (
+      const ata = (
         await PublicKey.findProgramAddress(
           [
             wallet.publicKey.toBuffer(),
@@ -158,17 +158,15 @@ export async function setupCancelBid(
         )
       )[0];
       const settleInstructions: TransactionInstruction[] = [];
-
-      const existingAta = await connection.getAccountInfo(
-        receivingSolAccount_or_ata,
-      );
+      receivingSolAccount_or_ata = pubkeyToString(ata);
+      const existingAta = await connection.getAccountInfo(ata);
 
       // create a new ATA if there is none
       console.log('Looking for existing ata?', existingAta);
       if (!existingAta) {
         createAssociatedTokenAccountInstruction(
           settleInstructions,
-          receivingSolAccount_or_ata,
+          new PublicKey(receivingSolAccount_or_ata),
           wallet.publicKey,
           wallet.publicKey,
           ALT_SPL_MINT,
