@@ -13,7 +13,8 @@ import {
     Typography,
     Tabs,
     Tab,
-    useMediaQuery
+    useMediaQuery,
+    colors
   } from "@material-ui/core";
   import { ExpandMore, ImportExportRounded } from "@material-ui/icons";
 import { TokenInfo } from "@solana/spl-token-registry";
@@ -26,14 +27,20 @@ const useStyles = makeStyles((theme) => ({
     textField: {
       marginBottom: "8px",
     },
+    input: {
+      color: '#fff',
+      border: '1px solid #797A8C'
+    },
     tab: {
-      minWidth: "134px",
+        minWidth: "134px",
+        color: '#797A8C',
+        fontWeight: 500,
     },
     tabSelected: {
-      color: theme.palette.primary.contrastText,
-      fontWeight: 700,
-      backgroundColor: theme.palette.primary.main,
-      borderRadius: "10px",
+        color: 'white',
+        fontWeight: 500,
+        backgroundColor: '#292A3C',
+        borderRadius: "10px",
     },
     tabIndicator: {
       opacity: 0,
@@ -82,7 +89,7 @@ export default function TokenDialog({
     const filter = tokenFilter.toLowerCase();
     const styles = useStyles();
     const { swappableTokens, swappableTokensSollet, swappableTokensWormhole } = useSwappableTokens();
-    const displayTabs = !useMediaQuery("(max-width:450px)");
+    const displayTabs = !useMediaQuery("(max-width:0.5vw)");
     const selectedTokens =
       tabSelection === 0
         ? swappableTokens
@@ -104,22 +111,28 @@ export default function TokenDialog({
         onClose={onClose}
         scroll={"paper"}
         PaperProps={{
-          style: {
-            borderRadius: "10px",
-            width: "420px",
-          },
+            style: {
+              borderRadius: "10px",
+              width: "420px",
+              background: '#121212',
+              border: '2px solid #292A3C',
+              color: "white",
+            },
         }}
       >
-        <DialogTitle style={{ fontWeight: "bold" }}>
+        <DialogTitle style={{ fontWeight: "bold" }} disableTypography>
           <Typography variant="h6" style={{ paddingBottom: "16px" }}>
             Select a token
           </Typography>
           <TextField
             className={styles.textField}
-            placeholder={"Search name"}
+            placeholder={"Search auction mint"}
             value={tokenFilter}
             fullWidth
             variant="outlined"
+            InputProps={{
+              className: styles.input,
+            }}
             onChange={(e) => setTokenFilter(e.target.value)}
           />
         </DialogTitle>
@@ -216,13 +229,13 @@ export default function TokenDialog({
     let tokenInfo = tokenMap.get(mint.toString());
   
     return (
-      <Typography
-        style={{
-            padding: "0.5vw",
-            ...style,
-        }}
-      >
-        {tokenInfo?.symbol}
-      </Typography>
-    );
+        <div style={{ marginLeft: "16px" }}>
+          <Typography style={{ fontWeight: "bold" }}>
+            {tokenInfo?.symbol}
+          </Typography>
+          <Typography color="textSecondary" style={{ fontSize: "14px", color: '#797A8C' }}>
+            {tokenInfo?.name}
+          </Typography>
+        </div>
+      );
   }
