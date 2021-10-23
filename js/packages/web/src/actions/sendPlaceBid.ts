@@ -161,7 +161,7 @@ export async function setupPlaceBid(
     if (!existingAta) {
       createAssociatedTokenAccountInstruction(
         settleInstructions,
-        ata,
+        toPublicKey(receivingSolAccount_or_ata),
         wallet.publicKey,
         wallet.publicKey,
         ALT_SPL_MINT,

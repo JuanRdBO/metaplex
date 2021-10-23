@@ -1031,7 +1031,7 @@ async function deprecatedSetupRedeemParticipationInstructions(
         if (!existingAta) {
           createAssociatedTokenAccountInstruction(
             settleInstructions,
-            new PublicKey(receivingSolAccount_or_ata),
+            toPublicKey(receivingSolAccount_or_ata),
             wallet.publicKey,
             wallet.publicKey,
             ALT_SPL_MINT,
