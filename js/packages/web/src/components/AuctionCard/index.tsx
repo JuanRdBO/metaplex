@@ -60,6 +60,7 @@ import {
 import { useActionButtonContent } from './hooks/useActionButtonContent';
 import { endSale } from './utils/endSale';
 import { useInstantSaleState } from './hooks/useInstantSaleState';
+import { useTokenList } from '../../contexts/tokenList';
 
 async function calculateTotalCostOfRedeemingOtherPeoplesBids(
   connection: Connection,
@@ -231,7 +232,7 @@ export const AuctionCard = ({
 
   const mintKey = auctionView.auction.info.tokenMint;
   const balance = useUserBalance(mintKey);
-  
+  const tokenInfo = useTokenList().mainnetTokens.filter(m=>m.address == mintKey)[0]
   const myPayingAccount = balance.accounts[0];
   let winnerIndex: number | null = null;
   if (auctionView.myBidderPot?.pubkey)
@@ -535,7 +536,7 @@ export const AuctionCard = ({
             <div className="show-place-bid">
               <AmountLabel
                 title="in your wallet"
-                displaySymbol={true}
+                displaySymbol={tokenInfo.symbol}
                 style={{ marginBottom: 0 }}
                 amount={balance.balance}
                 customPrefix={
