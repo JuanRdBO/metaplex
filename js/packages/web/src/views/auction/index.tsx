@@ -39,6 +39,11 @@ import { MetaAvatar, MetaAvatarDetailed } from '../../components/MetaAvatar';
 import { AmountLabel } from '../../components/AmountLabel';
 import { ClickToCopy } from '../../components/ClickToCopy';
 
+import {
+  TokenListContainer,
+  TokenListProvider,
+} from "@solana/spl-token-registry";
+
 export const AuctionItem = ({
   item,
   index,
@@ -84,6 +89,7 @@ export const AuctionView = () => {
   const { env } = useConnectionConfig();
   const auction = useAuction(id);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [tokenList, setTokenList] = useState<TokenListContainer | null>(null);
   const art = useArt(auction?.thumbnail.metadata.pubkey);
   const { ref, data } = useExtendedArt(auction?.thumbnail.metadata.pubkey);
   const creators = useCreators(auction);
@@ -91,6 +97,10 @@ export const AuctionView = () => {
   useEffect(() => {
     pullAuctionPage(id);
   }, []);
+  useEffect(() => {
+    new TokenListProvider().resolve().then(setTokenList);
+  }, [setTokenList]);
+
   let edition = '';
   if (art.type === ArtType.NFT) {
     edition = 'Unique';
@@ -105,6 +115,10 @@ export const AuctionView = () => {
   const hasDescription = data === undefined || data.description === undefined;
   const description = data?.description;
   const attributes = data?.attributes;
+
+  // Added tokenList to know in which currency the auction is (SOL or other SPL) 
+  const mainnet_tokens = tokenList?tokenList.filterByClusterSlug("mainnet-beta").getList():[]
+  const currency_token = mainnet_tokens.filter(m=>m.address == auction?.auction.info.tokenMint)[0]
 
   const items = [
     ...(auction?.items
@@ -344,11 +358,11 @@ export const AuctionView = () => {
                     {nftCount === undefined ? (
                       <Skeleton paragraph={{ rows: 0 }} />
                     ) : (
-                      shortenAddress(auction?.auction.info.tokenMint || "")
+                      `${currency_token.name} ($${currency_token.symbol})`
                     )}
                     <ClickToCopy
                       className="copy-pubkey"
-                      copyText={auction?.auction.info.tokenMint || ""}
+                      copyText={currency_token?.address}
                     />
                   </span>
                 </div>
