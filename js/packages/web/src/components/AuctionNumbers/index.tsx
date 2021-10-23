@@ -34,7 +34,7 @@ export const AuctionNumbers = (props: {
   auctionView: AuctionView;
   hideCountdown?: boolean;
   showAsRow?: boolean;
-  displaySOL?: boolean;
+  displaySymbol?: boolean;
 }) => {
   const { auctionView } = props;
   const state = useAuctionCountdown(auctionView);
@@ -60,7 +60,7 @@ export const AuctionNumbers = (props: {
         <>
           {(isUpcoming || bids.length === 0 || auctionView.isInstantSale) && (
             <AmountLabel
-              displaySOL={props.displaySOL}
+              displaySymbol={props.displaySymbol}
               style={{ marginBottom: props.showAsRow ? 0 : 10 }}
               title={auctionView.isInstantSale ? 'Price' : 'Starting bid'}
               amount={fromLamports(
@@ -71,7 +71,7 @@ export const AuctionNumbers = (props: {
           )}
           {!auctionView.isInstantSale && isStarted && bids.length > 0 && (
             <AmountLabel
-              displaySOL={props.displaySOL}
+            displaySymbol={props.displaySymbol}
               style={{ marginBottom: props.showAsRow ? 0 : 10 }}
               containerStyle={{
                 flexDirection: props.showAsRow ? ' row' : 'column',

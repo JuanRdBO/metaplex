@@ -14,7 +14,6 @@ export const solToUSD = async (): Promise<number> => {
 };
 
 export const altSplToUSD = async (): Promise<number> => {
-  console.log("ENV", process.env)
   if (!process.env.NEXT_CG_SPL_TOKEN_ID)
     throw new Error("Alternative SPL token triggered but no token mint specified")
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Statistic } from 'antd';
 import { useSolPrice, useAltSplPrice } from '../../contexts';
-import { formatUSD } from '@oyster/common';
+import { formatAmount, formatUSD } from '@oyster/common';
 import { SolCircle } from '../Custom';
 
 interface IAmountLabel {
@@ -28,7 +28,9 @@ export const AmountLabel = (props: IAmountLabel) => {
     customPrefix,
     ended,
   } = props;
+  // Add formattedAmount to be able to parse USD value and retain abbreviation of value
   const amount = typeof _amount === 'string' ? parseFloat(_amount) : _amount;
+  const formattedAmount = formatAmount(amount)
 
   const solPrice = useSolPrice();
   const altSplPrice = useAltSplPrice()
@@ -51,7 +53,7 @@ export const AmountLabel = (props: IAmountLabel) => {
           style={style}
           className="create-statistic"
           title={title || ''}
-          value={`${amount}${displaySymbol ? symbolName : ''}`}
+          value={`${formattedAmount} ${displaySymbol ? symbolName : ''}`}
           prefix={customPrefix || <SolCircle iconSize={iconSize} />}
         />
       )}

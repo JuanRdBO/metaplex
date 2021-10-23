@@ -537,7 +537,7 @@ export const AuctionCard = ({
                 title="in your wallet"
                 displaySymbol={true}
                 style={{ marginBottom: 0 }}
-                amount={formatAmount(balance.balance, 2)}
+                amount={balance.balance}
                 customPrefix={
                   <Identicon
                     address={wallet?.publicKey?.toBase58()}
