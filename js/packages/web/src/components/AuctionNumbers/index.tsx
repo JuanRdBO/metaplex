@@ -79,6 +79,7 @@ export const AuctionNumbers = (props: {
                 flexDirection: props.showAsRow ? ' row' : 'column',
               }}
               title="Highest bid"
+              iconFile = {tokenInfo.logoURI}
               amount={formatTokenAmount(bids[0].info.lastBid, mintInfo)}
             />
           )}
