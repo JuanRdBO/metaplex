@@ -14,8 +14,6 @@ export const CurrentUserBadge = (props: {
   const { wallet, publicKey } = useWallet();
   const { account } = useNativeAccount();
 
-  console.log("??????")
-
   if (!wallet || !publicKey) {
     return null;
   }

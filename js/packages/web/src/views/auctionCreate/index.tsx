@@ -31,8 +31,9 @@ import {
   IPartialCreateAuctionArgs,
   MetadataKey,
   StringPublicKey,
+  WRAPPED_SOL_MINT,
 } from '@oyster/common';
-import { Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { Connection, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { MintLayout } from '@solana/spl-token';
 import { useHistory, useParams } from 'react-router-dom';
@@ -54,6 +55,7 @@ import { useMeta } from '../../contexts';
 import useWindowDimensions from '../../utils/layout';
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { SystemProgram } from '@solana/web3.js';
+import TokenDialog, { TokenButton } from '../../components/TokenDialog/tokenDialog';
 
 const { Option } = Select;
 const { Step } = Steps;
@@ -787,6 +789,8 @@ const InstantSaleStep = ({
   setAttributes: (attr: AuctionState) => void;
   confirm: () => void;
 }) => {
+  const [showTokenDialog, setShowTokenDialog] = useState(false);
+  const [mint, setMint] = useState<PublicKey>()
   const copiesEnabled = useMemo(
     () => !!attributes?.items?.[0]?.masterEdition?.info?.maxSupply,
     [attributes?.items?.[0]],
@@ -868,6 +872,15 @@ const InstantSaleStep = ({
               )}
             </label>
           )}
+          <label className="action-field">
+            <span className="field-title">Auction mint</span>
+            <TokenButton mint={WRAPPED_SOL_MINT} onClick={() => setShowTokenDialog(true)} />
+            <TokenDialog
+              setMint={setMint}
+              open={showTokenDialog}
+              onClose={() => setShowTokenDialog(false)}
+            />
+          </label>
 
           <label className="action-field">
             <span className="field-title">Price</span>

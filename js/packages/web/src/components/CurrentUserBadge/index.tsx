@@ -207,7 +207,6 @@ export const CurrentUserBadge = (props: {
   const { wallet, publicKey, disconnect } = useWallet();
   const { account } = useNativeAccount();
   const solPrice = useSolPrice();
-  const solIcon = useTokenList().mainnetTokens.filter(t=>t.address == WRAPPED_SOL_MINT.toBase58())[0].logoURI
   const [showAddFundsModal, setShowAddFundsModal] = useState<Boolean>(false);
 
   if (!wallet || !publicKey) {
@@ -215,8 +214,6 @@ export const CurrentUserBadge = (props: {
   }
   const balance = (account?.lamports || 0) / LAMPORTS_PER_SOL;
   const balanceInUSD = balance * solPrice;
-
-  console.log("BADGE", balance, balanceInUSD, account)
 
   const iconStyle: React.CSSProperties = {
     display: 'flex',
@@ -268,7 +265,7 @@ export const CurrentUserBadge = (props: {
                     marginBottom: 10,
                   }}
                 >
-                  <TokenCircle iconFile={solIcon}/>
+                  <TokenCircle/>
                   &nbsp;
                   <span
                     style={{
