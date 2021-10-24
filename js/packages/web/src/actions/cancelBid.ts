@@ -15,6 +15,7 @@ import {
   createAssociatedTokenAccountInstruction,
   programIds,
   pubkeyToString,
+  WRAPPED_SOL_MINT,
 } from '@oyster/common';
 import { AccountLayout } from '@solana/spl-token';
 import {
@@ -31,7 +32,6 @@ import {
 import { claimUnusedPrizes } from './claimUnusedPrizes';
 import { setupPlaceBid } from './sendPlaceBid';
 import { WalletNotConnectedError } from '@solana/wallet-adapter-base';
-import { ALT_SPL_MINT } from '@oyster/common';
 
 export async function sendCancelBid(
   connection: Connection,
@@ -135,7 +135,7 @@ export async function setupCancelBid(
 
   if (mint && auctionView.myBidderPot) {
     let receivingSolAccount_or_ata = '';
-    if (!ALT_SPL_MINT) {
+    if (auctionView.auction.info.tokenMint == WRAPPED_SOL_MINT.toBase58()) {
       receivingSolAccount_or_ata = ensureWrappedAccount(
         cancelInstructions,
         cleanupInstructions,
@@ -147,12 +147,15 @@ export async function setupCancelBid(
     } else {
       // if alternative currency is set, go for it
       const PROGRAM_IDS = programIds();
+      const auctionTokenMint = new PublicKey(
+        auctionView.auction.info.tokenMint,
+      );
       const ata = (
         await PublicKey.findProgramAddress(
           [
             wallet.publicKey.toBuffer(),
             PROGRAM_IDS.token.toBuffer(),
-            ALT_SPL_MINT.toBuffer(),
+            auctionTokenMint.toBuffer(),
           ],
           PROGRAM_IDS.associatedToken,
         )
@@ -169,7 +172,7 @@ export async function setupCancelBid(
           toPublicKey(receivingSolAccount_or_ata),
           wallet.publicKey,
           wallet.publicKey,
-          ALT_SPL_MINT,
+          auctionTokenMint,
         );
       }
     }

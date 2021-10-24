@@ -29,8 +29,8 @@ import {
   toPublicKey,
   WalletSigner,
   createAssociatedTokenAccountInstruction,
-  ALT_SPL_MINT,
   pubkeyToString,
+  WRAPPED_SOL_MINT,
 } from '@oyster/common';
 import { WalletNotConnectedError } from '@solana/wallet-adapter-base';
 import { AccountLayout, MintLayout, Token } from '@solana/spl-token';
@@ -776,7 +776,7 @@ export async function setupRedeemParticipationInstructions(
     }
 
     let receivingSolAccount_or_ata = '';
-    if (!ALT_SPL_MINT) {
+    if (auctionView.auction.info.tokenMint == WRAPPED_SOL_MINT.toBase58()) {
       receivingSolAccount_or_ata = ensureWrappedAccount(
         mintingInstructions,
         cleanupInstructions,
@@ -788,12 +788,15 @@ export async function setupRedeemParticipationInstructions(
     } else {
       // if alternative currency is set, go for it
       const PROGRAM_IDS = programIds();
+      const auctionTokenMint = new PublicKey(
+        auctionView.auction.info.tokenMint,
+      );
       const ata = (
         await PublicKey.findProgramAddress(
           [
             wallet.publicKey.toBuffer(),
             PROGRAM_IDS.token.toBuffer(),
-            ALT_SPL_MINT.toBuffer(),
+            auctionTokenMint.toBuffer(),
           ],
           PROGRAM_IDS.associatedToken,
         )
@@ -811,7 +814,7 @@ export async function setupRedeemParticipationInstructions(
           ata,
           wallet.publicKey,
           wallet.publicKey,
-          ALT_SPL_MINT,
+          auctionTokenMint,
         );
       }
     }
@@ -1000,7 +1003,7 @@ async function deprecatedSetupRedeemParticipationInstructions(
           : auctionView.myBidderMetadata.info.lastBid.toNumber() || 0;
 
       let receivingSolAccount_or_ata = '';
-      if (!ALT_SPL_MINT) {
+      if (auctionView.auction.info.tokenMint == WRAPPED_SOL_MINT.toBase58()) {
         receivingSolAccount_or_ata = ensureWrappedAccount(
           winningPrizeInstructions,
           cleanupInstructions,
@@ -1012,12 +1015,15 @@ async function deprecatedSetupRedeemParticipationInstructions(
       } else {
         // if alternative currency is set, go for it
         const PROGRAM_IDS = programIds();
+        const auctionTokenMint = new PublicKey(
+          auctionView.auction.info.tokenMint,
+        );
         const ata = (
           await PublicKey.findProgramAddress(
             [
               wallet.publicKey.toBuffer(),
               PROGRAM_IDS.token.toBuffer(),
-              ALT_SPL_MINT.toBuffer(),
+              auctionTokenMint.toBuffer(),
             ],
             PROGRAM_IDS.associatedToken,
           )
@@ -1034,7 +1040,7 @@ async function deprecatedSetupRedeemParticipationInstructions(
             toPublicKey(receivingSolAccount_or_ata),
             wallet.publicKey,
             wallet.publicKey,
-            ALT_SPL_MINT,
+            auctionTokenMint,
           );
         }
       }
