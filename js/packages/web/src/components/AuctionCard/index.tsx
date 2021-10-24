@@ -299,7 +299,7 @@ export const AuctionCard = ({
     value * LAMPORTS_PER_SOL < priceFloor ||
     (minBid && value < minBid) ||
     loading ||
-    !accountByMint.get(QUOTE_MINT.toBase58());
+    !accountByMint.get(auctionView.auction.info.tokenMint);
 
   useEffect(() => {
     if (wallet.connected) {
@@ -683,7 +683,7 @@ export const AuctionCard = ({
                       }
                     }}
                   >
-                    {loading || !accountByMint.get(QUOTE_MINT.toBase58()) ? (
+                    {loading || !accountByMint.get(auctionView.auction.info.tokenMint) ? (
                       <Spin />
                     ) : (
                       'Bid now'

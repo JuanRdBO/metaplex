@@ -19,12 +19,12 @@ export function useUserBalance(
   const { userAccounts } = useUserAccounts();
   const [balanceInUSD, setBalanceInUSD] = useState(0);
   // TODO: add option to register for different token prices without having to set them in env
-  console.log(
+  /*  console.log(
     '[--P]MINTADDRESS',
     mintAddress,
     useAllSplPrices(),
     useSolPrice(),
-  );
+  ); */
 
   const solPrice = useSolPrice();
   const altSplPrice = useAllSplPrices().filter(
