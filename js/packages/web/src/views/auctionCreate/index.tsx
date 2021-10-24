@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import {
   Divider,
   Steps,
@@ -35,7 +35,7 @@ import {
 } from '@oyster/common';
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { MintLayout } from '@solana/spl-token';
+import { MintInfo, MintLayout } from '@solana/spl-token';
 import { useHistory, useParams } from 'react-router-dom';
 import { capitalize } from 'lodash';
 import {
@@ -56,6 +56,9 @@ import useWindowDimensions from '../../utils/layout';
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { SystemProgram } from '@solana/web3.js';
 import TokenDialog, { TokenButton } from '../../components/TokenDialog/tokenDialog';
+import { useTokenList } from '../../contexts/tokenList';
+import { mintTo } from '@project-serum/serum/lib/token-instructions';
+import { TokenInfo } from '@solana/spl-token-registry';
 
 const { Option } = Select;
 const { Step } = Steps;
@@ -132,6 +135,9 @@ export interface AuctionState {
 
   instantSalePrice?: number;
   instantSaleType?: InstantSaleType;
+
+  quoteMintAddress: string;
+  quoteMintInfo: MintInfo;
 }
 
 export const AuctionCreateView = () => {
@@ -163,6 +169,9 @@ export const AuctionCreateView = () => {
     winnersCount: 1,
     startSaleTS: undefined,
     startListTS: undefined,
+    quoteMintAddress: '',
+    //@ts-ignore
+    quoteMintInfo: undefined,
   });
 
   const [tieredAttributes, setTieredAttributes] = useState<TieredAuctionState>({
@@ -182,6 +191,8 @@ export const AuctionCreateView = () => {
 
   const createAuction = async () => {
     let winnerLimit: WinnerLimit;
+    //const mint = attributes.quoteMintInfo
+    console.log("ATTRIBUTES", attributes)
     if (
       attributes.category === AuctionCategory.InstantSale &&
       attributes.instantSaleType === InstantSaleType.Open
@@ -203,6 +214,8 @@ export const AuctionCreateView = () => {
 
       if (items.length > 0) {
         const item = items[0];
+        
+        console.log("UPDATE AUTH", item)
 
         if (!editions) {
           item.winningConfigType =
@@ -466,7 +479,7 @@ export const AuctionCreateView = () => {
           : PriceFloorType.None,
         minPrice: new BN((attributes.priceFloor || 0) * LAMPORTS_PER_SOL),
       }),
-      tokenMint: QUOTE_MINT.toBase58(),
+      tokenMint: attributes.quoteMintAddress,
       gapTickSizePercentage: attributes.tickSizeEndingPhase || null,
       tickSize: attributes.priceTick
         ? new BN(attributes.priceTick * LAMPORTS_PER_SOL)
@@ -496,7 +509,7 @@ export const AuctionCreateView = () => {
       auctionSettings,
       safetyDepositDrafts,
       participationSafetyDepositDraft,
-      QUOTE_MINT.toBase58(),
+      attributes.quoteMintAddress,
       storeIndexer,
     );
     setAuctionObj(_auctionObj);
@@ -790,7 +803,15 @@ const InstantSaleStep = ({
   confirm: () => void;
 }) => {
   const [showTokenDialog, setShowTokenDialog] = useState(false);
-  const [mint, setMint] = useState<PublicKey>()
+  const [mint, setMint] = useState<PublicKey>(WRAPPED_SOL_MINT)
+  // give default value to mint
+  const mintInfo = useTokenList().tokenMap.get((!mint? QUOTE_MINT.toString(): mint.toString()))
+
+  attributes.quoteMintAddress = mint? mint.toBase58(): QUOTE_MINT.toBase58()
+  attributes.quoteMintInfo = useMint(attributes.quoteMintAddress)
+
+  console.log("OBJ MINT", mint.toBase58())
+
   const copiesEnabled = useMemo(
     () => !!attributes?.items?.[0]?.masterEdition?.info?.maxSupply,
     [attributes?.items?.[0]],
@@ -874,11 +895,13 @@ const InstantSaleStep = ({
           )}
           <label className="action-field">
             <span className="field-title">Auction mint</span>
-            <TokenButton mint={WRAPPED_SOL_MINT} onClick={() => setShowTokenDialog(true)} />
+            <TokenButton mint={mint} onClick={() => setShowTokenDialog(true)} />
             <TokenDialog
               setMint={setMint}
               open={showTokenDialog}
-              onClose={() => setShowTokenDialog(false)}
+              onClose={() => {
+                setShowTokenDialog(false); 
+              }}
             />
           </label>
 
@@ -894,7 +917,7 @@ const InstantSaleStep = ({
               className="input"
               placeholder="Price"
               prefix="◎"
-              suffix="SOL"
+              suffix={mintInfo?.symbol}
               onChange={info =>
                 setAttributes({
                   ...attributes,
@@ -1798,11 +1821,13 @@ const ReviewStep = (props: {
       props.connection.getMinimumBalanceForRentExemption(MintLayout.span),
       props.connection.getMinimumBalanceForRentExemption(MAX_METADATA_LEN),
     ]);
-
+    console.log("COST", rentCall, cost)
     // TODO: add
   }, [setCost]);
 
   let item = props.attributes.items?.[0];
+
+  console.log("AUCTION PROPS", props)
 
   return (
     <>
@@ -1827,7 +1852,7 @@ const ReviewStep = (props: {
             }
           />
           {cost ? (
-            <AmountLabel title="Cost to Create" amount={cost} />
+            <AmountLabel title="Cost to Create" amount={cost} tokenInfo={useTokenList().tokenMap.get(WRAPPED_SOL_MINT.toString())}/>
           ) : (
             <Spin />
           )}

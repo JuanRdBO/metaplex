@@ -144,6 +144,7 @@ export default function TokenDialog({
                 tokenInfo={tokenInfo}
                 onClick={(mint) => {
                   setMint(mint);
+                  console.log("SET MINT TO", mint.toBase58())
                   onClose();
                 }}
               />

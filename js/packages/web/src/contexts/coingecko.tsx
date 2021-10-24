@@ -27,7 +27,7 @@ export const altSplToUSD = async (cgTokenName?: string): Promise<number> => {
       : process.env.NEXT_CG_SPL_TOKEN_ID || ""
   const url = `${COINGECKO_COIN_PRICE_API}?ids=${cg_spl_token_id}&vs_currencies=usd`;
   const resp = await window.fetch(url).then(resp => resp.json());
-  console.log("[--P]Processing", cgTokenName, resp)
+  //console.log("[--P]Processing", cgTokenName, resp)
   return resp[cg_spl_token_id]?.usd;
 };
 
@@ -53,16 +53,16 @@ export function CoingeckoProvider({ children = null as any }) {
           const splName = subscribedTokenIDS[i]
           const splMint = subscribedTokenMints[i]
 
-          console.log("[--P]PROCESSING TOKEN",i,  splName, splMint)
+          //console.log("[--P]PROCESSING TOKEN",i,  splName, splMint)
           const splPrice = await altSplToUSD(splName)
-          console.log("[--P]PRICE", splPrice)
+          //console.log("[--P]PRICE", splPrice)
           allSplPrices[i] = {tokenMint: splMint, tokenName: splName, tokenPrice: splPrice}
         } catch(e) {
-          console.log("[--P] error setting", e)
+          //console.log("[--P] error setting", e)
         }
       }
       setAllSplPrices(allSplPrices)
-      console.log("[--P]SUBSCRIBED TOKENS", allSplPrices)
+      //console.log("[--P]SUBSCRIBED TOKENS", allSplPrices)
 
       ;
       startTimer();

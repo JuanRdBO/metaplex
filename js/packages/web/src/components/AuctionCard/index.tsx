@@ -233,7 +233,7 @@ export const AuctionCard = ({
   const mintKey = auctionView.auction.info.tokenMint;
   const balance = useUserBalance(mintKey);
   const tokenInfo = useTokenList().mainnetTokens.filter(m=>m.address == mintKey)[0]
-  console.log("[--P]AuctionCard", tokenInfo, mintKey)
+  //console.log("[--P]AuctionCard", tokenInfo, mintKey)
   const myPayingAccount = balance.accounts[0];
   let winnerIndex: number | null = null;
   if (auctionView.myBidderPot?.pubkey)
